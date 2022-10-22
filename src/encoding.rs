@@ -2,11 +2,13 @@ use std::str::EncodeUtf16;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 enum EncodingMode {
-    Numeric,
-    Alphanumeric,
-    Byte,
-    Kanji,
+    Numeric(usize) = 0,
+    Alphanumeric(usize) = 1,
+    Byte(usize) = 2,
+    //Kanji(usize) = 3, This is for more difficult character sets
 }
+
+impl value for EncodingMode {}
 
 fn determine_encoding(information: &str) -> EncodingMode {
     let mut mode = EncodingMode::Numeric;
