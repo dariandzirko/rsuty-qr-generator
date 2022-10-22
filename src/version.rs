@@ -1,3 +1,6 @@
+use bitvec::prelude::*;
+use range_check::Check;
+
 struct ErrorCorrectionLevel {
     name: string,
     value: usize,
@@ -31,4 +34,37 @@ fn determine_version(
         }
     }
     return None;
+}
+
+fn character_count_indicator(
+    EncodingMode: encoding,
+    usize: version,
+    usize: information_len,
+) -> bitvec {
+    let mut bitvec_size = 0;
+    if version.range_check(1, 9) {
+        match encoding::value {
+            0 => bitvec_size = 10,
+            1 => bitvec_size = 9,
+            2 => bitvec_size = 8,
+            //_ => Blow up
+        }
+    } else if version.range_check(10, 26) {
+        match encoding::value {
+            0 => bitvec_size = 12,
+            1 => bitvec_size = 11,
+            2 => bitvec_size = 16,
+            //_ => Blow up
+        }
+    } else if version.range_check(27, 40) {
+        match encoding::value {
+            0 => bitvec_size = 14,
+            1 => bitvec_size = 13,
+            2 => bitvec_size = 16,
+            //_ => Blow up
+        }
+    }
+
+    //I want a bitvec that is size bitvec_size but contains the properly zero padded information that is the information_len
+    //ex. bitvec_size = 9 | information_len = 11 ---> return 000001101; with the zeros being important
 }

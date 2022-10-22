@@ -8,7 +8,11 @@ enum EncodingMode {
     //Kanji(usize) = 3, This is for more difficult character sets
 }
 
-impl value for EncodingMode {}
+impl EncodingMode {
+    fn mode_indicator(&self) -> u8 {
+        return 0x0001 << self::value;
+    }
+}
 
 fn determine_encoding(information: &str) -> EncodingMode {
     let mut mode = EncodingMode::Numeric;
