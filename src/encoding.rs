@@ -1,20 +1,25 @@
-use std::str::EncodeUtf16;
+use bitvec::prelude::*;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
-enum EncodingMode {
-    Numeric(usize) = 0,
-    Alphanumeric(usize) = 1,
-    Byte(usize) = 2,
+pub enum EncodingMode {
+    Numeric = 0,
+    Alphanumeric = 1,
+    Byte = 2,
     //Kanji(usize) = 3, This is for more difficult character sets
 }
 
 impl EncodingMode {
-    fn mode_indicator(&self) -> u8 {
-        return 0x0001 << self::value;
+    fn mode_indicator(&self) -> BitVec {
+        match self {
+            EncodingMode::Numeric => return bitvec![0, 0, 0, 1],
+            EncodingMode::Alphanumeric => return bitvec![0, 0, 1, 0],
+            EncodingMode::Byte => return bitvec![0, 1, 0, 0],
+            //_ => Blow up
+        }
     }
 }
 
-fn determine_encoding(information: &str) -> EncodingMode {
+pub fn determine_encoding(information: &str) -> EncodingMode {
     let mut mode = EncodingMode::Numeric;
     for char in information.chars() {
         if char.is_ascii_uppercase() {
@@ -29,7 +34,7 @@ fn determine_encoding(information: &str) -> EncodingMode {
 
 #[cfg(test)]
 mod tests {
-    use crate::{determine_encoding, EncodingMode};
+    use crate::encoding::{determine_encoding, EncodingMode};
 
     #[test]
     fn test_determine_encoding() {
