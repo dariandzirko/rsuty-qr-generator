@@ -31,7 +31,7 @@ impl ErrorCorrectionLevel {
 pub fn determine_version(
     information: &str,
     error_correction_level: ErrorCorrectionLevel,
-    encoding: EncodingMode,
+    encoding: &EncodingMode,
 ) -> usize {
     let information_len = information.len();
     for version in 0..40 {
@@ -44,10 +44,10 @@ pub fn determine_version(
     return 0;
 }
 
-fn character_count_indicator(
-    encoding: EncodingMode,
+pub fn character_count_indicator(
+    encoding: &EncodingMode,
     version: usize,
-    information_len: u8,
+    information_len: usize,
 ) -> BitVec {
     let mut bitvec_size = 0;
     if version.check_range(1..9).is_ok() {
@@ -55,25 +55,23 @@ fn character_count_indicator(
             EncodingMode::Numeric => bitvec_size = 10,
             EncodingMode::Alphanumeric => bitvec_size = 9,
             EncodingMode::Byte => bitvec_size = 8,
-            //_ => Blow up
         }
     } else if version.check_range(10..26).is_ok() {
         match encoding {
             EncodingMode::Numeric => bitvec_size = 12,
             EncodingMode::Alphanumeric => bitvec_size = 11,
             EncodingMode::Byte => bitvec_size = 16,
-            //_ => Blow up
         }
     } else if version.check_range(27..40).is_ok() {
         match encoding {
             EncodingMode::Numeric => bitvec_size = 14,
             EncodingMode::Alphanumeric => bitvec_size = 13,
             EncodingMode::Byte => bitvec_size = 16,
-            //_ => Blow up
         }
     }
 
     let encoding_bitvec = encoding.mode_indicator();
+    println!("{:?}", encoding_bitvec);
     //encoding_bitvec.append(information_len);
 
     return encoding_bitvec;

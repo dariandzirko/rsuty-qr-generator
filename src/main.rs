@@ -8,5 +8,6 @@ fn main() {
     let info = "HELLO WORLD";
     let eclevel = version::ErrorCorrectionLevel::new("Q");
     let enc = encoding::determine_encoding(info);
-    let ver = version::determine_version(info, eclevel, enc);
+    let ver = version::determine_version(info, eclevel, &enc);
+    let char_count = version::character_count_indicator(&enc, ver, info.len());
 }
