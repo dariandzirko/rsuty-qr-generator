@@ -3,7 +3,7 @@
 // Also I just took this dudes code
 // https://github.com/treeman/rqr/blob/master/src/version.rs
 // Version x Error Correction Level x Encoding Mode (numeric, alphanumeric, byte)
-const CHARACTER_CAPACITIES: [[[usize; 3]; 4]; 40] = [
+pub const CHARACTER_CAPACITIES: [[[usize; 3]; 4]; 40] = [
     [[41, 25, 17], [34, 20, 14], [27, 16, 11], [17, 10, 7]],
     [[77, 47, 32], [63, 38, 26], [48, 29, 20], [34, 20, 14]],
     [[127, 77, 53], [101, 61, 42], [77, 47, 32], [58, 35, 24]],

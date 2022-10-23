@@ -2,18 +2,26 @@ use bitvec::prelude::*;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 pub enum EncodingMode {
-    Numeric = 0,
-    Alphanumeric = 1,
-    Byte = 2,
+    Numeric,
+    Alphanumeric,
+    Byte,
     //Kanji(usize) = 3, This is for more difficult character sets
 }
 
 impl EncodingMode {
-    fn mode_indicator(&self) -> BitVec {
+    pub fn mode_indicator(&self) -> BitVec {
         match self {
             EncodingMode::Numeric => return bitvec![0, 0, 0, 1],
             EncodingMode::Alphanumeric => return bitvec![0, 0, 1, 0],
             EncodingMode::Byte => return bitvec![0, 1, 0, 0],
+            //_ => Blow up
+        }
+    }
+    pub fn value(&self) -> usize {
+        match self {
+            EncodingMode::Numeric => return 0,
+            EncodingMode::Alphanumeric => return 1,
+            EncodingMode::Byte => return 2,
             //_ => Blow up
         }
     }

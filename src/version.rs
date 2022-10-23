@@ -1,5 +1,5 @@
 use bitvec::prelude::*;
-use range_check::Check;
+use range_check::*;
 
 use crate::capacities::CHARACTER_CAPACITIES;
 use crate::encoding::EncodingMode;
@@ -21,14 +21,14 @@ impl ErrorCorrectionLevel {
             "M" => return 1,
             "Q" => return 2,
             "H" => return 3,
-            //_ => Error and get mad at user
+            _ => return 100000,
         }
     }
 }
 
 //Should this return an option
 //Also is there a better way to do this, then using pretty much treeman's method
-fn determine_version(
+pub fn determine_version(
     information: &str,
     error_correction_level: ErrorCorrectionLevel,
     encoding: EncodingMode,
@@ -36,7 +36,7 @@ fn determine_version(
     let information_len = information.len();
     for version in 0..40 {
         if information_len
-            <= CHARACTER_CAPACITIES[version][error_correction_level.value][encoding::value]
+            <= CHARACTER_CAPACITIES[version][error_correction_level.value][encoding.value()]
         {
             return version + 1;
         }
@@ -47,35 +47,34 @@ fn determine_version(
 fn character_count_indicator(
     encoding: EncodingMode,
     version: usize,
-    information_len: usize,
+    information_len: u8,
 ) -> BitVec {
     let mut bitvec_size = 0;
-    if version.range_check(1, 9) {
-        match encoding::value {
-            0 => bitvec_size = 10,
-            1 => bitvec_size = 9,
-            2 => bitvec_size = 8,
+    if version.check_range(1..9).is_ok() {
+        match encoding {
+            EncodingMode::Numeric => bitvec_size = 10,
+            EncodingMode::Alphanumeric => bitvec_size = 9,
+            EncodingMode::Byte => bitvec_size = 8,
             //_ => Blow up
         }
-    } else if version.range_check(10, 26) {
-        match encoding::value {
-            0 => bitvec_size = 12,
-            1 => bitvec_size = 11,
-            2 => bitvec_size = 16,
+    } else if version.check_range(10..26).is_ok() {
+        match encoding {
+            EncodingMode::Numeric => bitvec_size = 12,
+            EncodingMode::Alphanumeric => bitvec_size = 11,
+            EncodingMode::Byte => bitvec_size = 16,
             //_ => Blow up
         }
-    } else if version.range_check(27, 40) {
-        match encoding::value {
-            0 => bitvec_size = 14,
-            1 => bitvec_size = 13,
-            2 => bitvec_size = 16,
+    } else if version.check_range(27..40).is_ok() {
+        match encoding {
+            EncodingMode::Numeric => bitvec_size = 14,
+            EncodingMode::Alphanumeric => bitvec_size = 13,
+            EncodingMode::Byte => bitvec_size = 16,
             //_ => Blow up
         }
     }
 
-    let encoding_bitvec = bitvec![u8, Msb0];
-    encoding_bitvec.append(encoding.mode_indicator);
-    encoding_bitvec.append(information_len);
+    let encoding_bitvec = encoding.mode_indicator();
+    //encoding_bitvec.append(information_len);
 
     return encoding_bitvec;
     //I want a bitvec that is size bitvec_size but contains the properly zero padded information that is the information_len
