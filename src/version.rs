@@ -70,11 +70,19 @@ pub fn character_count_indicator(
         }
     }
 
-    let encoding_bitvec = encoding.mode_indicator();
-    println!("{:?}", encoding_bitvec);
-    //encoding_bitvec.append(information_len);
+    let mut encoding_bitvec = encoding.mode_indicator();
 
+    let bitvec_size_raw = bitvec_size.view_bits::<Lsb0>();
+    let bitvec_size_bits = bitvec_size_raw
+        .iter_ones()
+        .last()
+        .unwrap_or(bitvec::mem::bits_of::<usize>() - 1);
+
+    let mut temp_bitvec = bitvec_size_raw[..=bitvec_size_bits].to_bitvec();
+
+    let mut zero_pad = bitvec![0; bitvec_size - temp_bitvec.len()];
+    zero_pad.append(&mut temp_bitvec);
+
+    encoding_bitvec.append(&mut zero_pad);
     return encoding_bitvec;
-    //I want a bitvec that is size bitvec_size but contains the properly zero padded information that is the information_len
-    //ex. bitvec_size = 9 | information_len = 11 ---> return 000001101; with the zeros being important
 }

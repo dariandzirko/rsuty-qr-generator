@@ -10,4 +10,5 @@ fn main() {
     let enc = encoding::determine_encoding(info);
     let ver = version::determine_version(info, eclevel, &enc);
     let char_count = version::character_count_indicator(&enc, ver, info.len());
+    println!("char_count{:?}", char_count);
 }

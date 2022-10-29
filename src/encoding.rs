@@ -40,6 +40,42 @@ pub fn determine_encoding(information: &str) -> EncodingMode {
     return mode;
 }
 
+fn enocde_numeric(information: &str) -> BitVec {
+    let mut bitvec = BitVec::<usize, Lsb0>::new();
+
+    for i in (0..information.len()).step_by(3) {
+        if i + 2 < information.len() {
+            bitvec.append(&mut str_to_bitvec(&information[i..i + 2], 10));
+        } else if i + 1 < information.len() {
+            bitvec.append(&mut str_to_bitvec(&information[i..i + 2], 7));
+        } else {
+            bitvec.append(&mut str_to_bitvec(&information[i..i + 2], 4));
+        }
+    }
+    bitvec
+}
+
+fn str_to_bitvec(small_str: &str, total_bits: usize) -> BitVec {
+    let mut bitvec = BitVec::new();
+    for c in small_str.chars() {
+        let num = c.to_digit(10).unwrap() as usize;
+        let bitvec_size_raw = num.view_bits::<Lsb0>();
+        let bitvec_size_bits = bitvec_size_raw
+            .iter_ones()
+            .last()
+            .unwrap_or(bitvec::mem::bits_of::<usize>() - 1);
+
+        let mut temp_bitvec = bitvec_size_raw[..=bitvec_size_bits].to_bitvec();
+        let mut zeropad = bitvec![0; total_bits - temp_bitvec.len()];
+        bitvec.append(&mut zeropad);
+        bitvec.append(&mut temp_bitvec);
+    }
+    bitvec
+}
+
+fn enocde_alphanumeric(information: &str) {}
+fn enocde_byte(information: &str) {}
+
 #[cfg(test)]
 mod tests {
     use crate::encoding::{determine_encoding, EncodingMode};
