@@ -72,17 +72,24 @@ pub fn character_count_indicator(
 
     let mut encoding_bitvec = encoding.mode_indicator();
 
-    let bitvec_size_raw = bitvec_size.view_bits::<Lsb0>();
-    let bitvec_size_bits = bitvec_size_raw
+    let mut temp_bitvec = num_to_bitvec(bitvec_size);
+
+    pad_then_append(bitvec_size, &mut encoding_bitvec, temp_bitvec);
+    return encoding_bitvec;
+}
+
+pub fn num_to_bitvec(num: usize) -> BitVec {
+    let num_raw = num.view_bits::<Lsb0>();
+    let num_bits = num_raw
         .iter_ones()
         .last()
         .unwrap_or(bitvec::mem::bits_of::<usize>() - 1);
 
-    let mut temp_bitvec = bitvec_size_raw[..=bitvec_size_bits].to_bitvec();
+    num_raw[..=num_bits].to_bitvec()
+}
 
-    let mut zero_pad = bitvec![0; bitvec_size - temp_bitvec.len()];
-    zero_pad.append(&mut temp_bitvec);
-
-    encoding_bitvec.append(&mut zero_pad);
-    return encoding_bitvec;
+pub fn pad_then_append(padded_appendage_len: usize, base: &mut BitVec, mut appendage: BitVec) {
+    let mut zero_pad = bitvec!(0; padded_appendage_len - appendage.len());
+    base.append(&mut zero_pad);
+    base.append(&mut appendage);
 }

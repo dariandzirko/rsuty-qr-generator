@@ -1,4 +1,9 @@
+use core::{num, panicking::panic_str};
+use std::thread::panicking;
+
 use bitvec::prelude::*;
+
+use crate::version::{num_to_bitvec, pad_then_append};
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
 pub enum EncodingMode {
@@ -58,14 +63,7 @@ fn enocde_numeric(information: &str) -> BitVec {
 fn str_to_bitvec(small_str: &str, total_bits: usize) -> BitVec {
     let mut bitvec = BitVec::new();
     for c in small_str.chars() {
-        let num = c.to_digit(10).unwrap() as usize;
-        let bitvec_size_raw = num.view_bits::<Lsb0>();
-        let bitvec_size_bits = bitvec_size_raw
-            .iter_ones()
-            .last()
-            .unwrap_or(bitvec::mem::bits_of::<usize>() - 1);
-
-        let mut temp_bitvec = bitvec_size_raw[..=bitvec_size_bits].to_bitvec();
+        let mut temp_bitvec = num_to_bitvec(c.to_digit(10).unwrap() as usize);
         let mut zeropad = bitvec![0; total_bits - temp_bitvec.len()];
         bitvec.append(&mut zeropad);
         bitvec.append(&mut temp_bitvec);
@@ -73,8 +71,75 @@ fn str_to_bitvec(small_str: &str, total_bits: usize) -> BitVec {
     bitvec
 }
 
-fn enocde_alphanumeric(information: &str) {}
+fn enocde_alphanumeric(information: &str) -> BitVec {
+    let mut bitvec = BitVec::new();
+    for index in (0..information.len()).step_by(2) {
+        if index + 1 < information.len() {
+            let temp_bitvec = num_to_bitvec(
+                convert_alphanumeric(information.chars().nth(index).unwrap()) * 45
+                    + convert_alphanumeric(information.chars().nth(index + 1).unwrap()),
+            );
+            pad_then_append(11, &mut bitvec, temp_bitvec);
+        } else {
+            let mut temp_bitvec =
+                num_to_bitvec(convert_alphanumeric(information.chars().nth(index).unwrap()) * 45);
+            pad_then_append(6, &mut bitvec, temp_bitvec);
+        }
+    }
+    bitvec
+}
 fn enocde_byte(information: &str) {}
+
+fn convert_alphanumeric(c: char) -> usize {
+    match c {
+        '0' => 0,
+        '1' => 1,
+        '2' => 2,
+        '3' => 3,
+        '4' => 4,
+        '5' => 5,
+        '6' => 6,
+        '7' => 7,
+        '8' => 8,
+        '9' => 9,
+        'A' => 10,
+        'B' => 11,
+        'C' => 12,
+        'D' => 13,
+        'E' => 14,
+        'F' => 15,
+        'G' => 16,
+        'H' => 17,
+        'I' => 18,
+        'J' => 19,
+        'K' => 20,
+        'L' => 21,
+        'M' => 22,
+        'N' => 23,
+        'O' => 24,
+        'P' => 25,
+        'Q' => 26,
+        'R' => 27,
+        'S' => 28,
+        'T' => 29,
+        'U' => 30,
+        'V' => 31,
+        'W' => 32,
+        'X' => 33,
+        'Y' => 34,
+        'Z' => 35,
+        ' ' => 36,
+        '$' => 37,
+        '%' => 38,
+        '*' => 39,
+        '+' => 40,
+        '-' => 41,
+        '.' => 42,
+        '/' => 43,
+        ':' => 44,
+        _ => panic!("Unsupported alphanumeric '{}'", c),
+    }
+}
 
 #[cfg(test)]
 mod tests {
