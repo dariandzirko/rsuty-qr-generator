@@ -1,5 +1,4 @@
-use core::{num, panicking::panic_str};
-use std::thread::panicking;
+use std::usize;
 
 use bitvec::prelude::*;
 
@@ -88,7 +87,11 @@ fn enocde_alphanumeric(information: &str) -> BitVec {
     }
     bitvec
 }
-fn enocde_byte(information: &str) {}
+
+fn enocde_byte(information: &str) -> BitVec {
+    //let str_raw = information.parse::<usize>().unwrap();
+    num_to_bitvec(information.parse::<usize>().unwrap())
+}
 
 fn convert_alphanumeric(c: char) -> usize {
     match c {
